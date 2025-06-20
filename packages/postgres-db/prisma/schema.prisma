@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+    id            String     @id @default(uuid())
+    firstName     String?
+    lastName      String?
+    userName      String?
+    image         String?
+    email         String     @unique
+    verifiedEmail Boolean    @default(false)
+    sessions      Session[]
+    settings      Settings[]
+    profile       Profile[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Profile {
+    userId    String   @unique
+    watchlist String[] @default([])
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Session {
+    sessionToken String   @id @default(uuid())
+    userId       String
+    expires      DateTime
+    device       String
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Settings {
+    id           String        @id @default(uuid())
+    userId       String        @unique
+    country      ECountries    @default(India)
+    language     ELanguage     @default(English)
+    currency     ECurrency     @default(DOLLAR)
+    subscription ESubscription @default(Free)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model CryptoStats {
+    cryptoId   String @unique
+    viewsDaily Int    @default(0)
+    bull       Int    @default(0)
+    bear       Int    @default(0)
+
+    cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
+}
+
+model CryptoData {
+    cryptoId String @unique
+    name     String
+    symbol   String
+
+    cryptoStats   CryptoStats[]
+    CryptoInfo    CryptoInfo[]
+    CryptoStudy   CryptoStudy[]
+}
+
+model CryptoInfo {
+    cryptoId     String  @unique
+    website      String?
+    twitter      String?
+    reddit       String?
+    technicalDoc String?
+    sourceCode   String?
+
+    cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
+}
+
+model CryptoStudy {
+    cryptoId       String   @unique
+    category       String
+    description    String
+    dateLaunched   String?
+    infiniteSupply Boolean?
+
+    cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
+}
+
+enum ECountries {
+    UnitedStates
+    India
+    China
+    Japan
+    Germany
+    UnitedKingdom
+    France
+    Brazil
+    Canada
+    Russia
+    SouthKorea
+    Australia
+}
+
+enum ESubscription {
+    Free
+    Premium
+    Infinity
+}
+
+enum ECurrency {
+    DOLLAR
+}
+
+enum ELanguage {
+    English
+}
