@@ -1,9 +1,7 @@
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
 
-
-export default defineConfig([
+export const baseConfig = [
   { 
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], 
     languageOptions: { globals: {...globals.browser, ...globals.node}} 
@@ -14,7 +12,7 @@ export default defineConfig([
       "@typescript-eslint/no-unused-vars": ["warn", {
         "argsIgnorePattern": "^_"
       }],
-			"@typescript-eslint/no-duplicate-imports": ["error", {
+			"@/no-duplicate-imports": ["error", {
 				"includeExports": true
 			}],
 			"@/capitalized-comments": ["error", "never"],
@@ -22,6 +20,10 @@ export default defineConfig([
 			"@/no-var": ["error"],
 			"@/prefer-const": ["error"],
 			"@/require-await": ["error"]
-    }
+    },
+  },
+  {
+  	ignores: ["dist/*", "node_modules/*"]
   }
-]);
+
+];
