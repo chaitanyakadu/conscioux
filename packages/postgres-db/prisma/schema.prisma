@@ -5,13 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
@@ -67,41 +66,47 @@ model Settings {
 }
 
 model CryptoStats {
-    cryptoId   String @unique
-    viewsDaily Int    @default(0)
-    bull       Int    @default(0)
-    bear       Int    @default(0)
+    cryptoId   Int @unique
+    viewsDaily Int @default(0)
+    bull       Int @default(0)
+    bear       Int @default(0)
 
     cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
 }
 
 model CryptoData {
-    cryptoId String @unique
+    cryptoId Int    @unique
     name     String
     symbol   String
 
-    cryptoStats   CryptoStats[]
-    CryptoInfo    CryptoInfo[]
-    CryptoStudy   CryptoStudy[]
+    cryptoStats CryptoStats[]
+    CryptoInfo  CryptoUrls[]
+    CryptoStudy CryptoAssets[]
 }
 
-model CryptoInfo {
-    cryptoId     String  @unique
-    website      String?
-    twitter      String?
-    reddit       String?
-    technicalDoc String?
-    sourceCode   String?
+model CryptoUrls {
+    cryptoId      Int     @unique
+    website       String?
+    twitter       String?
+    reddit        String?
+    technicalDoc  String?
+    sourceCode    String?
+    messageBoard String?
+    announcement  String?
+    chat          String?
+    explorer      String?
 
     cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
 }
 
-model CryptoStudy {
-    cryptoId       String   @unique
-    category       String
-    description    String
-    dateLaunched   String?
-    infiniteSupply Boolean?
+model CryptoAssets {
+    cryptoId      Int    @unique
+    logo          String
+    slug          String
+    description   String
+    dateAdded    String
+    dateLaunched String
+    category      String
 
     cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
 }
