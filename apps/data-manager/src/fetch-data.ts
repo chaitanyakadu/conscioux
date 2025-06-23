@@ -2,6 +2,8 @@ import { Redis } from "ioredis"
 import axios from "axios"
 import pako from "pako"
 import { ICryptoUrls, ICryptoAssets, ICryptoLatest, ICryptoOverview, DataManagerError, DataManagerResponse, ICryptoResponse, RedisKey, ERedisCacheKey } from "./types.js"
+// @ts-ignore
+import prisma from "../../../packages/postgres-db/dist/prisma.js"
 
 const redis: Redis = new Redis()
 
@@ -140,6 +142,19 @@ export const cryptoOverviewTask = async () => {
 			await compressAndCacheData({ id, type: ERedisCacheKey.ASSETS, data: compressedCryptoAssets })
 
 			// push the data to database
+			await prisma.cryptoUrls.update({
+				where: {
+					cryptoId: id
+				},
+				data: cryptoUrls
+			})
+
+			await prisma.crytpoAssets.update({
+				where: {
+					cryptoId: id
+				},
+				data: crytpoAssets
+			})
 		})
 	} catch (error: any) {
 		if (error instanceof DataManagerError) {
