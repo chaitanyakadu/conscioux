@@ -1,6 +1,7 @@
 {
   "name": "data-manager",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "Data Manager is a worker service that periodically fetches cryptocurrency data from CoinMarketCap API endpoints. It processes the received data and distributes it to various storage systems for real-time use and long-term persistence.",
   "scripts": {
     "build": "tsc -b",
     "dev": "bun run build && node ./dist/server.js",
