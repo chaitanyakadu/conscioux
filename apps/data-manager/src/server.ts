@@ -46,10 +46,13 @@ const fetchCryptoMetaDataJob = CronJob.from({
 fetchRealTimeDataJob.start()
 fetchCryptoMetaDataJob.start()
 
+const port = process.env.PORT
+
 // metrics endpoint
 http.createServer(async (req, res) => {
 	if (req.url === '/metrics') {
 		res.writeHead(200, { 'Content-Type': register.contentType, 'access-control-allow-origin': '*', 'access-control-allow-methods': '*' })
 		res.end(await register.metrics())
 	}
-}).listen(process.env.PORT)
+})
+	.listen({ port }, () => console.log(`Listening to port ${port}`))
