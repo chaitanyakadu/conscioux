@@ -15,15 +15,18 @@ export const baseConfig = [
 			"@/no-duplicate-imports": ["error", {
 				"includeExports": true
 			}],
-			"@/capitalized-comments": ["error", "never"],
+			"@/capitalized-comments": ["warn", "never"],
 			"@/eqeqeq": ["error", "always", {"null": "ignore"}],
 			"@/no-var": ["error"],
 			"@/prefer-const": ["error"],
-			"@/require-await": ["error"]
+			"@/require-await": ["error"],
+      "@/semi": ["error", "never"],
+			"@/no-trailing-spaces": ["warn"],
+      "@typescript-eslint/no-explicit-any": "warn"
     },
   },
   {
-  	ignores: ["dist/*", "node_modules/*"]
+  	ignores: ["dist/*", "node_modules/*", "*.mjs"]
   }
 
 ];

@@ -4,8 +4,15 @@ import pako from "pako"
 import { ICryptoUrls, ICryptoAssets, ICryptoLatest, ICryptoOverview, DataManagerError, DataManagerResponse, ICryptoResponse, RedisKey, ERedisCacheKey } from "./types.js"
 // @ts-ignore
 import prisma from "../../../packages/postgres-db/dist/prisma.js"
+import { Counter } from "prom-client"
 
 const redis: Redis = new Redis()
+
+const jobFailure = new Counter({
+	name: "cron_job_total_failure",
+	labelNames: ["service", "jobType"],
+	help: "Total number of failed cron jobs execution."
+})
 
 /*
 	why - pako compresses data into Uint8Array<ArrayBufferLike>
@@ -20,15 +27,21 @@ function compressToString(obj: any): string {
 /*
 	why - DRY principle
 */
-async function compressAndCacheData({ id, type, data }: { id: number, type: ERedisCacheKey, data: string }) {
+async function compressAndCacheData({ id, type, data, hasPublish }: { id: number, type: ERedisCacheKey, data: string, hasPublish: boolean }) {
 	const value: string = compressToString(data)
 
 	const key: string = new RedisKey({ key: type, id }).getKey()
 
-	// caching the values to redis
-	await Promise.all([
-		redis.set(key, value)
-	])
+	// publishing the values to redis
+	if (hasPublish) {
+		await Promise.all([
+			redis.publish(key, value)
+		])
+	} else {
+		await Promise.all([
+			redis.set(key, value)
+		])
+	}
 }
 
 // function flow - fetch api endpoint -> destructure data -> compress -> cache
@@ -71,8 +84,8 @@ export const cryptoLatestTask = async () => {
 			const compressedCryptoLatest: string = compressToString(cryptoLatest)
 			const compressedCryptoOverview: string = compressToString(cryptoOverview)
 
-			await compressAndCacheData({ id, type: ERedisCacheKey.LATEST, data: compressedCryptoLatest })
-			await compressAndCacheData({ id, type: ERedisCacheKey.OVERVIEW, data: compressedCryptoOverview })
+			await compressAndCacheData({ id, type: ERedisCacheKey.LATEST, data: compressedCryptoLatest, hasPublish: true })
+			await compressAndCacheData({ id, type: ERedisCacheKey.OVERVIEW, data: compressedCryptoOverview, hasPublish: true })
 		})
 	} catch (error: any) {
 		if (error instanceof DataManagerError) {
@@ -82,6 +95,7 @@ export const cryptoLatestTask = async () => {
 		} else {
 			new DataManagerResponse({ data: error, timestamp: new Date().toLocaleString("en-IN"), message: "This error was caused due to caching or compressing the fetched data from /listings/latest api endpoint of cmc.", error_code: undefined, error_message: undefined }).warnResponce()
 		}
+		jobFailure.inc({ service: "data-manager", jobType: "crypto-latest" })
 	}
 }
 
@@ -138,8 +152,8 @@ export const cryptoOverviewTask = async () => {
 			const compressedCryptoUrls: string = compressToString(cryptoUrls)
 			const compressedCryptoAssets: string = compressToString(crytpoAssets)
 
-			await compressAndCacheData({ id, type: ERedisCacheKey.URLS, data: compressedCryptoUrls })
-			await compressAndCacheData({ id, type: ERedisCacheKey.ASSETS, data: compressedCryptoAssets })
+			await compressAndCacheData({ id, type: ERedisCacheKey.URLS, data: compressedCryptoUrls, hasPublish: false })
+			await compressAndCacheData({ id, type: ERedisCacheKey.ASSETS, data: compressedCryptoAssets, hasPublish: false })
 
 			// push the data to database
 			await prisma.cryptoUrls.update({
@@ -164,5 +178,6 @@ export const cryptoOverviewTask = async () => {
 		} else {
 			new DataManagerResponse({ data: error, timestamp: new Date().toLocaleString("en-IN"), message: "This error was caused due to caching or compressing the fetched data from /info api endpoint of cmc.", error_code: undefined, error_message: undefined }).warnResponce()
 		}
+		jobFailure.inc({ service: "data-manager", jobType: "crypto-metadata" })
 	}
 }
