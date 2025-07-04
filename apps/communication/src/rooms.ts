@@ -1,8 +1,11 @@
+import { WebSocket } from "ws";
 
+export let room: Map<string, Array<WebSocket>> = new Map<string, Array<WebSocket>>()
 
-// let rooms: Map<string, Set<WebSocket>> = new Map<string, Set<WebSocket>>()
+export async function rooms({cryptoId, user}: {cryptoId: number, user: WebSocket}) {
+  const users: Array<WebSocket> = room.get(`room-[${cryptoId}]`) || []
 
-// export function handleConnection({ userId, roomId }: { userId: string, roomId: string }) {
-//   rooms.get()
-// }
+  users?.push(user)
 
+  room.set(`room-[${cryptoId}]`, users)
+}
