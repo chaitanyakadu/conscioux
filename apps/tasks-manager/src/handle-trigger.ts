@@ -1,0 +1,1 @@
+export async function handleTrigger(formulas: string[]) {}
