@@ -1,1 +1,1 @@
-{"root":["./src/server.ts"],"version":"5.8.3"}
+{"root":["./src/handle-task-execution.ts","./src/handle-trigger.ts","./src/server.ts","./src/types.ts"],"version":"5.8.3"}
