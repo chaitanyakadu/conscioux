@@ -31,6 +31,8 @@ export async function handleTaskExecution() {
       const result: string[] = tasks.filter((task: string) => {
         totalTaskExecutions.inc({ service: "tasks-manager" })
 
+        // the code is invalid
+        // we need to make sure is LHS == RHS then return true else false
         safeEval(task) // danger. Implementation is unsafe. We need to implement a function for strict checking of input
         // for example the input must have only above characters also the time execution must take at max 1 sec or exclude
       })

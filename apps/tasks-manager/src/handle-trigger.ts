@@ -10,10 +10,11 @@ const totalTriggerRegistered = new Counter({
   help: "Total number of times the trigger was registered."
 })
 
-export function handleTrigger(formulas: string[]) {
+export function handleTrigger(tasks: string[]) {
   try {
-    formulas.forEach((formula) => {
+    tasks.forEach((formula) => {
       const usersList: TasksInfo | null = tasksMap.get(formula) || null
+
       if (usersList) {
         usersList.forEach(async (userData) => {
           const { timestamp, sessionId } = userData
@@ -34,6 +35,7 @@ export function handleTrigger(formulas: string[]) {
               information
             }
           })
+
           totalTriggerRegistered.inc({service: "task manager"})
         })
       }

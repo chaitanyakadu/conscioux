@@ -10,6 +10,7 @@ configDotenv()
 
 export const redis = new Redis()
 
+// this variable stores the information about [task, userData]
 export const tasksMap: Map<string, TasksInfo> = new Map<string, TasksInfo>()
 
 const totalDataFetches = new Counter({
@@ -18,13 +19,13 @@ const totalDataFetches = new Counter({
   help: "Total number of times the data was received from redis(SUBSCRIBE CRYPTO-LATEST)."
 })
 
-// lets have 6 primary tasks
-
-// users will have certain tasks connected
-// we will push it into tasks map where key is task id and value is array of user metadata
+// the function pulls the tasks data from redis using rpop
+// later pass the array of tasks data to handle task execution function
 async function handleDataCollection() {
   let listEmpty: boolean = false
 
+  // the do while is a bogus approach
+  // transition to rpop all
   do {
     try {
       const value: string | null = await redis.rpop("tasks-executor")
@@ -48,9 +49,6 @@ async function handleDataCollection() {
   } while (!listEmpty)
 }
 
-// we have cron jobs that trigger every minute and runs all the tasks
-// we will provide the tasks executor funtion the task and its id
-// it will return the array of successfull task ids
 const tasksExecutionJob = CronJob.from({
   name: "Executing tasks",
   onTick: async () => {
@@ -76,8 +74,6 @@ const dataCollectionJob = CronJob.from({
 
 tasksExecutionJob.start()
 dataCollectionJob.start()
-
-// this task id can be used by the trigger handler function to take user id and pull the user gmail to send mail
 
 const port = process.env.TASK_MANAGER_PORT
 

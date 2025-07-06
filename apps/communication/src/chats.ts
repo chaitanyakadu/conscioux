@@ -4,7 +4,7 @@ import { Filter } from "bad-words"
 
 const filter = new Filter({ placeHolder: "*" })
 
-export async function chats(data: IData) {
+export function chats(data: IData) {
   const users = room.get(`room-[${data.cryptoId}]`)
 
   users?.forEach((user) => {

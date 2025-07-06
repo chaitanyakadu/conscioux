@@ -1,5 +1,5 @@
 import { type WebSocket, WebSocketServer } from 'ws'
-import { Counter, Gauge, register } from 'prom-client'
+import { Gauge, register } from 'prom-client'
 import http from "http"
 import { configDotenv } from 'dotenv'
 import { EMsgType, IData } from './types.js'
@@ -19,11 +19,11 @@ const totalErrors = new Gauge({
 })
 
 configDotenv()
-const port: number = Number(process.env.COMMUNICATION_WS_PORT || 3000)
+const websocketPort: number = Number(process.env.COMMUNICATION_WS_PORT || 3000)
 
-const wss: WebSocketServer = new WebSocketServer({ port })
+const wss: WebSocketServer = new WebSocketServer({ port: websocketPort })
 
-wss.on("connection", async (ws: WebSocket) => {
+wss.on("connection", (ws: WebSocket) => {
 
   liveConnections.inc({ service: "communication" })
 
@@ -39,11 +39,11 @@ wss.on("connection", async (ws: WebSocket) => {
 
       switch (data.msgType) {
         case EMsgType.CHAT: {
-          await chats(data)
+          chats(data)
           break
         }
         case EMsgType.CONNECT: {
-          await rooms({ cryptoId: data.cryptoId, user: ws })
+          rooms({ cryptoId: data.cryptoId, user: ws })
           break
         }
         default: {
