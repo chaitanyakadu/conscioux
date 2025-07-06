@@ -1,11 +1,10 @@
 export interface ITasksData {
   timestamp: Date;
   formula: string;
-  userId: string;
-  taskId: string;
+  sessionId: string;
 }
 
-export type TasksInfo = Array<Pick<ITasksData, 'timestamp' | 'userId' | 'taskId'>>
+export type TasksInfo = Array<Pick<ITasksData, 'timestamp' | 'sessionId'>>
 
 export interface ICryptoLatest {
   pr: number;

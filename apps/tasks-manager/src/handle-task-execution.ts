@@ -1,23 +1,43 @@
 import { handleTrigger } from "./handle-trigger.js"
-import { redis, tasksMap } from "./server.js"
-import { ICryptoLatest, TasksInfo } from "./types.js"
+import { tasksMap } from "./server.js"
+import { ICryptoLatest } from "./types.js"
 // @ts-ignore
 import safeEval from "safe-eval"
+import { Redis } from "ioredis"
+import { Counter } from "prom-client"
+import Pako from "pako"
+
+const totalTaskExecutions = new Counter({
+  name: "total_task_executions",
+  labelNames: ["service"],
+  help: "Total number of times the task was executed."
+})
+
+const redis = new Redis()
 
 export async function handleTaskExecution() {
-  const cryptoId: number = 1
-  await redis.subscribe(`crypto-latest-[${cryptoId}]`)
+  try {
+    const cryptoId: number = 1
+    await redis.subscribe(`crypto-latest-[${cryptoId}]`)
 
-  await redis.on("message", (message) => {
-    if (!message) throw new Error("Message is of type null")
+    redis.on("message", (_, compressedMsg) => {
+      if (!compressedMsg) throw new Error("Message is of type null")
 
-    const { pr, pc_1h, pc_24h, pc_7d, mc, tv_24h, vc_24h, cs, tm_s }: ICryptoLatest = JSON.parse(message)
-    const tasks: string[] = [...tasksMap.keys()]
+      const compressedBuffer = Buffer.from(compressedMsg, "base64")
+      const message = Pako.inflate(compressedBuffer, { to: "string" })
+      const { pr, pc_1h, pc_24h, pc_7d, mc, tv_24h, vc_24h, cs, tm_s }: ICryptoLatest = JSON.parse(message)
+      const tasks: string[] = [...tasksMap.keys()]
 
-    const result: string[] = tasks.filter((task: string) => {
-      safeEval(task)
+      const result: string[] = tasks.filter((task: string) => {
+        totalTaskExecutions.inc({ service: "tasks-manager" })
+
+        safeEval(task) // danger. Implementation is unsafe. We need to implement a function for strict checking of input
+        // for example the input must have only above characters also the time execution must take at max 1 sec or exclude
+      })
+
+      handleTrigger(result)
     })
-
-    handleTrigger(result)
-  })
+  } catch (error) {
+    console.warn(error)
+  }
 }
