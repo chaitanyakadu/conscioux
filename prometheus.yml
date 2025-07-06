@@ -17,4 +17,5 @@ scrape_configs:
 
     static_configs:
       - targets: ['172.18.0.1:3001']
+      - targets: ['172.18.0.1:3003']
       - targets: ['172.18.0.1:9091']

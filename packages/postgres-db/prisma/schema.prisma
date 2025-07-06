@@ -14,16 +14,17 @@ datasource db {
 }
 
 model User {
-    id            String     @id @default(uuid())
+    id            String         @id @default(uuid())
     firstName     String?
     lastName      String?
     userName      String?
     image         String?
-    email         String     @unique
-    verifiedEmail Boolean    @default(false)
+    email         String         @unique
+    verifiedEmail Boolean        @default(false)
     sessions      Session[]
     settings      Settings[]
     profile       Profile[]
+    notification  Notification[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -85,30 +86,40 @@ model CryptoData {
 }
 
 model CryptoUrls {
-    cryptoId      Int     @unique
-    website       String?
-    twitter       String?
-    reddit        String?
-    technicalDoc  String?
-    sourceCode    String?
+    cryptoId     Int     @unique
+    website      String?
+    twitter      String?
+    reddit       String?
+    technicalDoc String?
+    sourceCode   String?
     messageBoard String?
-    announcement  String?
-    chat          String?
-    explorer      String?
+    announcement String?
+    chat         String?
+    explorer     String?
 
     cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
 }
 
 model CryptoAssets {
-    cryptoId      Int    @unique
-    logo          String
-    slug          String
-    description   String
+    cryptoId     Int    @unique
+    logo         String
+    slug         String
+    description  String
     dateAdded    String
     dateLaunched String
-    category      String
+    category     String
 
     cryptoData CryptoData @relation(fields: [cryptoId], references: [cryptoId], onDelete: Cascade)
+}
+
+model Notification {
+    id          String  @id @default(uuid())
+    userId      String
+    information String
+    timestamp   String
+    read        Boolean @default(false)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum ECountries {
