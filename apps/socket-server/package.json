@@ -1,0 +1,8 @@
+{
+  "name": "socket-server",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {},
+  "license": "ISC",
+  "type": "module"
+}
